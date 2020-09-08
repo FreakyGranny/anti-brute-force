@@ -1,0 +1,16 @@
+version: '2.1'
+services:
+  redis:
+    image: "redis:alpine"
+    command: redis-server --requirepass sOmE_sEcUrE_pAsS
+    ports:
+     - "6379:6379"
+  db:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+    volumes:
+      - ./db-init.sh:/docker-entrypoint-initdb.d/init.sh
+    ports:
+      - "5432:5432"
