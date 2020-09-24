@@ -75,12 +75,12 @@ func (s *SQLStorage) RemoveFromWhiteList(ctx context.Context, id int) error {
 	return err
 }
 
-// GetBlackList returns list of subnet in black list
+// GetBlackList returns list of subnet in black list.
 func (s *SQLStorage) GetBlackList(ctx context.Context) ([]*IPNet, error) {
 	return s.getSubnetList(ctx, "SELECT id, subnet FROM blacklist")
 }
 
-// GetWhiteList returns list of subnet in white list
+// GetWhiteList returns list of subnet in white list.
 func (s *SQLStorage) GetWhiteList(ctx context.Context) ([]*IPNet, error) {
 	return s.getSubnetList(ctx, "SELECT id, subnet FROM whitelist")
 }

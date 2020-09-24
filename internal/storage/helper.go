@@ -1,8 +1,10 @@
 package storage
 
 import (
-	"fmt"
+	"net"
+	"net/url"
 	"strconv"
+	"strings"
 )
 
 func sslModeToString(sslEnable bool) string {
@@ -14,14 +16,14 @@ func sslModeToString(sslEnable bool) string {
 }
 
 // BuildDsn build dsn string from params.
-func BuildDsn(host string, port int, user string, password string, dbName string, sslMode bool) string {
-	return fmt.Sprintf(
-		"host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		host,
-		strconv.Itoa(port),
-		user,
-		dbName,
-		password,
-		sslModeToString(sslMode),
-	)
+func BuildDsn(host string, port int, user string, password string, dbName string, sslEnable bool) string {
+	u := &url.URL{
+		Scheme:   "postgresql",
+		User:     url.UserPassword(user, password),
+		Host:     net.JoinHostPort(host, strconv.Itoa(port)),
+		Path:     dbName,
+		RawQuery: strings.Join([]string{"sslmode", sslModeToString(sslEnable)}, "="),
+	}
+
+	return u.String()
 }

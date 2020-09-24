@@ -12,7 +12,7 @@ import (
 
 const period = time.Minute
 
-// Limiter ...
+// Limiter limit checker.
 type Limiter struct {
 	cache         cache.Cache
 	clock         clockwork.Clock
@@ -22,13 +22,13 @@ type Limiter struct {
 }
 
 // NewLimiter returns new limiter instance.
-func NewLimiter(cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, IPLimit int) *Limiter {
+func NewLimiter(cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, ipLimit int) *Limiter {
 	return &Limiter{
 		cache:         cache,
 		clock:         clock,
 		loginLimit:    loginLimit,
 		passwordLimit: passwordLimit,
-		IPLimit:       IPLimit,
+		IPLimit:       ipLimit,
 	}
 }
 
@@ -82,7 +82,7 @@ func (lim *Limiter) CheckLimits(ctx context.Context, login string, password stri
 	return true, nil
 }
 
-// DropBuckets deletes buckets for given login password
+// DropBuckets deletes buckets for given login password.
 func (lim *Limiter) DropBuckets(ctx context.Context, login string, password string) error {
 	p := lim.clock.Now().Minute()
 

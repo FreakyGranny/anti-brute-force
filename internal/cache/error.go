@@ -2,5 +2,5 @@ package cache
 
 import "errors"
 
-// ErrKeyNotFound ...
-var ErrKeyNotFound = errors.New("Key not found")
+// ErrKeyNotFound requested key not found.
+var ErrKeyNotFound = errors.New("key not found")

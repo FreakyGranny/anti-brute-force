@@ -6,7 +6,6 @@ import (
 
 	"github.com/FreakyGranny/anti-brute-force/internal/cache"
 	"github.com/FreakyGranny/anti-brute-force/internal/storage"
-
 	"github.com/jonboulle/clockwork"
 	"github.com/rs/zerolog/log"
 )
@@ -28,7 +27,7 @@ type App struct {
 }
 
 // New returns application instance.
-func New(storage storage.Storage, cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, IPLimit int) *App {
+func New(storage storage.Storage, cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, ipLimit int) *App {
 	return &App{
 		storage: storage,
 		limiter: NewLimiter(
@@ -36,7 +35,7 @@ func New(storage storage.Storage, cache cache.Cache, clock clockwork.Clock, logi
 			clock,
 			loginLimit,
 			passwordLimit,
-			IPLimit,
+			ipLimit,
 		),
 	}
 }
@@ -104,17 +103,17 @@ func (a *App) CheckRate(ctx context.Context, login string, password string, ip s
 	return a.limiter.CheckLimits(ctx, login, password, ip)
 }
 
-// DropStat drops all stats for given login, password
+// DropStat drops all stats for given login, password.
 func (a *App) DropStat(ctx context.Context, login string, password string) error {
 	return a.limiter.DropBuckets(ctx, login, password)
 }
 
-// AddToBlackList adding ip and mask to blacklist
+// AddToBlackList adding ip and mask to blacklist.
 func (a *App) AddToBlackList(ctx context.Context, ip string, mask string) error {
 	return a.storage.AddToBlackList(ctx, createRecord(ip, mask))
 }
 
-// AddToWhiteList adding ip and mask to whitelist
+// AddToWhiteList adding ip and mask to whitelist.
 func (a *App) AddToWhiteList(ctx context.Context, ip string, mask string) error {
 	return a.storage.AddToWhiteList(ctx, createRecord(ip, mask))
 }
@@ -129,12 +128,12 @@ func createRecord(ip string, mask string) *storage.IPNet {
 	return &storage.IPNet{Subnet: CIDR.String()}
 }
 
-// RemoveFromWhiteList removes record from whitelist
+// RemoveFromWhiteList removes record from whitelist.
 func (a *App) RemoveFromWhiteList(ctx context.Context, id int) error {
 	return a.storage.RemoveFromWhiteList(ctx, id)
 }
 
-// RemoveFromBlackList removes record from blacklist
+// RemoveFromBlackList removes record from blacklist.
 func (a *App) RemoveFromBlackList(ctx context.Context, id int) error {
 	return a.storage.RemoveFromBlackList(ctx, id)
 }

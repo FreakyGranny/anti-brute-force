@@ -4,11 +4,10 @@ import (
 	"context"
 	"testing"
 
-	"github.com/golang/mock/gomock"
-	"github.com/stretchr/testify/suite"
-
 	"github.com/FreakyGranny/anti-brute-force/internal/mocks"
 	"github.com/FreakyGranny/anti-brute-force/internal/storage"
+	"github.com/golang/mock/gomock"
+	"github.com/stretchr/testify/suite"
 )
 
 type AppSuite struct {
@@ -71,7 +70,6 @@ func (s *AppSuite) TestInBL() {
 	s.Require().NoError(err)
 	s.Require().True(c)
 }
-
 
 func (s *AppSuite) TestNotInWL() {
 	ctx := context.Background()

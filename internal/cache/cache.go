@@ -11,7 +11,7 @@ import (
 
 //go:generate mockgen -source=$GOFILE -destination=../mocks/cache_mock.go -package=mocks Cache
 
-// Cache ...
+// Cache cache object.
 type Cache interface {
 	Incr(ctx context.Context, key string, t time.Duration) error
 	Get(ctx context.Context, key string) (int, error)
@@ -19,12 +19,12 @@ type Cache interface {
 	Close() error
 }
 
-// RedisCache ...
+// RedisCache redis cache storage.
 type RedisCache struct {
 	client *redis.Client
 }
 
-// New ...
+// New returns new redis cache instance.
 func New(host string, port int, pass string) (*RedisCache, error) {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     net.JoinHostPort(host, strconv.Itoa(port)),
@@ -42,7 +42,7 @@ func New(host string, port int, pass string) (*RedisCache, error) {
 	return &RedisCache{client: rdb}, nil
 }
 
-// Incr increment value by given key
+// Incr increment value by given key.
 func (c *RedisCache) Incr(ctx context.Context, key string, t time.Duration) error {
 	err := c.client.Incr(ctx, key).Err()
 	if err != nil {
@@ -52,7 +52,7 @@ func (c *RedisCache) Incr(ctx context.Context, key string, t time.Duration) erro
 	return c.client.Expire(ctx, key, t).Err()
 }
 
-// Get returns value of given key
+// Get returns value of given key.
 func (c *RedisCache) Get(ctx context.Context, key string) (int, error) {
 	val, err := c.client.Get(ctx, key).Result()
 	if err != nil {
@@ -67,12 +67,12 @@ func (c *RedisCache) Get(ctx context.Context, key string) (int, error) {
 	return intVal, nil
 }
 
-// Del drops record by given key
+// Del drops record by given key.
 func (c *RedisCache) Del(ctx context.Context, key string) error {
 	return c.client.Del(ctx, key).Err()
 }
 
-// Close closes connection
+// Close closes connection.
 func (c *RedisCache) Close() error {
 	return c.client.Close()
 }

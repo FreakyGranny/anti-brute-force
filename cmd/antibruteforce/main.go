@@ -7,9 +7,8 @@ import (
 	"github.com/FreakyGranny/anti-brute-force/internal/app"
 	"github.com/FreakyGranny/anti-brute-force/internal/cache"
 	"github.com/FreakyGranny/anti-brute-force/internal/logger"
-	"github.com/FreakyGranny/anti-brute-force/internal/storage"
-
 	internalhttp "github.com/FreakyGranny/anti-brute-force/internal/server/http"
+	"github.com/FreakyGranny/anti-brute-force/internal/storage"
 	"github.com/jonboulle/clockwork"
 	"github.com/rs/zerolog/log"
 )
@@ -40,7 +39,7 @@ func main() {
 	if err != nil {
 		log.Err(err).
 			Msg("redis unavailable")
-		os.Exit(1)
+		return
 	}
 	defer cache.Close()
 
@@ -71,7 +70,6 @@ func main() {
 	if err := server.Start(); err != nil {
 		log.Err(err).
 			Msg("failed to start http server")
-		os.Exit(1)
+		return
 	}
-
 }
