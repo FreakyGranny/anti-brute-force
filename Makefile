@@ -3,6 +3,7 @@ generate:
 
 build:
 	go build -o ./bin/ab_force ./cmd/antibruteforce
+	go build -o ./bin/migrate ./cmd/migrate
 
 test:
 	go test -race ./internal/...

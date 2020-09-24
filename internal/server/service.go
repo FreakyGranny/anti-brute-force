@@ -43,23 +43,23 @@ func (s *Service) DropStat(ctx context.Context, req *DropStatRequest) (*empty.Em
 }
 
 // AddToWhiteList adds ip to white list.
-func (s *Service) AddToWhiteList(ctx context.Context, req *AddSubnetRequest) (*empty.Empty, error) {
+func (s *Service) AddToWhiteList(ctx context.Context, req *AddSubnetRequest) (*AddSubnetResponse, error) {
 	err := s.app.AddToWhiteList(ctx, req.GetIp(), req.GetMask())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "unable to add to white list")
 	}
 
-	return &empty.Empty{}, nil
+	return &AddSubnetResponse{Ip: req.GetIp(), Mask: req.GetMask()}, nil
 }
 
 // AddToBlackList adds ip to black list.
-func (s *Service) AddToBlackList(ctx context.Context, req *AddSubnetRequest) (*empty.Empty, error) {
+func (s *Service) AddToBlackList(ctx context.Context, req *AddSubnetRequest) (*AddSubnetResponse, error) {
 	err := s.app.AddToBlackList(ctx, req.GetIp(), req.GetMask())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "unable to add to black list")
 	}
 
-	return &empty.Empty{}, nil
+	return &AddSubnetResponse{Ip: req.GetIp(), Mask: req.GetMask()}, nil
 }
 
 // RemoveFromWhiteList removes ip from white list.

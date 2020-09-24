@@ -1,10 +1,8 @@
-version: '2.1'
+version: '3'
 services:
   redis:
     image: "redis:alpine"
     command: redis-server --requirepass sOmE_sEcUrE_pAsS
-    ports:
-     - "6379:6379"
   db:
     image: postgres:12-alpine
     environment:
@@ -12,5 +10,32 @@ services:
       - POSTGRES_USER=postgres
     volumes:
       - ./db-init.sh:/docker-entrypoint-initdb.d/init.sh
+  migrate:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: sh -c "/wait && /app/migrate"
+    environment:
+      - WAIT_HOSTS=db:5432
+      - DB_USERNAME=abf
+      - DB_PASSWORD=qwerty123
+      - DB_HOST=db
+    depends_on: [db]
+  grpc:
+    build:
+      context: ..
+      dockerfile: Dockerfile
+    command: sh -c "/wait && /app/ab_force"
+    environment:
+      - WAIT_HOSTS=db:5432,redis:6379
+      - WAIT_BEFORE_HOSTS=5
+      - DB_USERNAME=abf
+      - DB_PASSWORD=qwerty123
+      - DB_HOST=db
+      - DB_NAME=abf
+      - GRPC_HOST=0.0.0.0
+      - REDIS_PASSWORD=sOmE_sEcUrE_pAsS
+      - REDIS_HOST=redis
+    depends_on: [db, redis]
     ports:
-      - "5432:5432"
+      - "50051:50051"

@@ -7,6 +7,6 @@ ENV WAIT_VERSION 2.7.3
 ADD https://github.com/ufoscout/docker-compose-wait/releases/download/$WAIT_VERSION/wait /wait
 RUN chmod +x /wait
 
-COPY bin/ab_force /app
+COPY bin/. /app
 
-CMD ["/app/ab_force", "-h"]
+CMD ["/app/ab_force"]
