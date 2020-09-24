@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package abruteforce;
+
+option go_package=".;server";
+
+message AuthRequest {
+    string login = 1;
+    string password = 2;
+    string ip = 3;
+}
+
+message AuthResponse {
+    bool ok = 1;
+}
+
+message AddSubnetRequest {
+    string ip = 1;
+    string mask = 2;
+}
+
+message RemoveSubnetRequest {
+    string ip = 1;
+    string mask = 2;
+}
+
+message DropStatRequest {
+    string login = 1;
+    string password = 2;
+}
+
+service ABruteforce {
+    rpc Auth(AuthRequest) returns (AuthResponse) {}
+    rpc AddToWhiteList(AddSubnetRequest) returns (google.protobuf.Empty) {}
+    rpc AddToBlackList(AddSubnetRequest) returns (google.protobuf.Empty) {}
+    rpc RemoveFromWhiteList(RemoveSubnetRequest) returns (google.protobuf.Empty) {}
+    rpc RemoveFromBlackList(RemoveSubnetRequest) returns (google.protobuf.Empty) {}
+    rpc DropStat(DropStatRequest) returns (google.protobuf.Empty) {}
+}

@@ -31,58 +31,43 @@ func (s *SQLStorage) Close() error {
 }
 
 // AddToBlackList adds subnet to black list.
-func (s *SQLStorage) AddToBlackList(ctx context.Context, n *IPNet) error {
-	query := `INSERT INTO blacklist (subnet) VALUES(:subnet) RETURNING id`
+func (s *SQLStorage) AddToBlackList(ctx context.Context, ip, mask string) error {
+	query := `INSERT INTO blacklist (ip, mask) VALUES($1, $2)`
+	_, err := s.db.ExecContext(ctx, query, ip, mask)
 
-	return s.addToList(ctx, query, n)
+	return err
 }
 
 // AddToWhiteList adds subnet to white list.
-func (s *SQLStorage) AddToWhiteList(ctx context.Context, n *IPNet) error {
-	query := `INSERT INTO whitelist (subnet) VALUES(:subnet) RETURNING id`
+func (s *SQLStorage) AddToWhiteList(ctx context.Context, ip, mask string) error {
+	query := `INSERT INTO whitelist (ip, mask) VALUES($1, $2)`
+	_, err := s.db.ExecContext(ctx, query, ip, mask)
 
-	return s.addToList(ctx, query, n)
-}
-
-func (s *SQLStorage) addToList(ctx context.Context, query string, n *IPNet) error {
-	rows, err := s.db.NamedQueryContext(ctx, query, n)
-	if err != nil {
-		return err
-	}
-	defer rows.Close()
-
-	if rows.Next() {
-		err := rows.Scan(&n.ID)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return err
 }
 
 // RemoveFromBlackList removes subnet from black list.
-func (s *SQLStorage) RemoveFromBlackList(ctx context.Context, id int) error {
-	_, err := s.db.ExecContext(ctx, `DELETE FROM blacklist WHERE id = $1`, id)
+func (s *SQLStorage) RemoveFromBlackList(ctx context.Context, ip, mask string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM blacklist WHERE ip = $1 AND mask = $2`, ip, mask)
 
 	return err
 }
 
 // RemoveFromWhiteList removes subnet from white list.
-func (s *SQLStorage) RemoveFromWhiteList(ctx context.Context, id int) error {
-	_, err := s.db.ExecContext(ctx, `DELETE FROM whitelist WHERE id = $1`, id)
+func (s *SQLStorage) RemoveFromWhiteList(ctx context.Context, ip, mask string) error {
+	_, err := s.db.ExecContext(ctx, `DELETE FROM whitelist WHERE ip = $1 AND mask = $2`, ip, mask)
 
 	return err
 }
 
 // GetBlackList returns list of subnet in black list.
 func (s *SQLStorage) GetBlackList(ctx context.Context) ([]*IPNet, error) {
-	return s.getSubnetList(ctx, "SELECT id, subnet FROM blacklist")
+	return s.getSubnetList(ctx, "SELECT ip, mask FROM blacklist")
 }
 
 // GetWhiteList returns list of subnet in white list.
 func (s *SQLStorage) GetWhiteList(ctx context.Context) ([]*IPNet, error) {
-	return s.getSubnetList(ctx, "SELECT id, subnet FROM whitelist")
+	return s.getSubnetList(ctx, "SELECT ip, mask FROM whitelist")
 }
 
 func (s *SQLStorage) getSubnetList(ctx context.Context, query string) ([]*IPNet, error) {

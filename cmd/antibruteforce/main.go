@@ -1,16 +1,19 @@
 package main
 
 import (
+	"net"
 	"os"
 	"os/signal"
+	"strconv"
 
 	"github.com/FreakyGranny/anti-brute-force/internal/app"
 	"github.com/FreakyGranny/anti-brute-force/internal/cache"
 	"github.com/FreakyGranny/anti-brute-force/internal/logger"
-	internalhttp "github.com/FreakyGranny/anti-brute-force/internal/server/http"
+	"github.com/FreakyGranny/anti-brute-force/internal/server"
 	"github.com/FreakyGranny/anti-brute-force/internal/storage"
 	"github.com/jonboulle/clockwork"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -43,33 +46,35 @@ func main() {
 	}
 	defer cache.Close()
 
-	a := app.New(
+	lsn, err := net.Listen("tcp", net.JoinHostPort(cfg.GRPC.Host, strconv.Itoa(cfg.GRPC.Port)))
+	if err != nil {
+		log.Error().Err(err).Msg("")
+		return
+	}
+
+	srv := grpc.NewServer(grpc.UnaryInterceptor(server.LoggingInterceptor))
+	service := server.New(app.New(
 		db,
 		cache,
 		clockwork.NewRealClock(),
 		cfg.Limits.User,
 		cfg.Limits.Password,
 		cfg.Limits.IP,
-	)
-
-	server := internalhttp.NewServer(":8090", a)
+	))
+	server.RegisterABruteforceServer(srv, service)
 
 	go func() {
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt)
-
 		<-signals
 		signal.Stop(signals)
-
-		if err := server.Stop(); err != nil {
-			log.Err(err).
-				Msg("failed to stop http server")
-		}
+		srv.GracefulStop()
 	}()
 
-	if err := server.Start(); err != nil {
-		log.Err(err).
-			Msg("failed to start http server")
+	log.Info().Msgf("Starting server on %s", lsn.Addr().String())
+	if err := srv.Serve(lsn); err != nil {
+		log.Error().Err(err).
+			Msg("failed to start grpc server")
 		return
 	}
 }

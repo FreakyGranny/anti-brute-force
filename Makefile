@@ -10,10 +10,10 @@ test:
 lint:
 	golangci-lint run ./...
 
-up: build
-	docker-compose -f deployments/docker-compose.yaml -p ab-force up
+run: build
+	docker-compose -f deployments/docker-compose.yaml -p abf up
 
 down:
-	docker-compose -f deployments/docker-compose.yaml -p ab-force down
+	docker-compose -f deployments/docker-compose.yaml -p abf down
 
-.PHONY: build test lint generate up down
+.PHONY: build test lint generate run down

@@ -33,12 +33,12 @@ func (s *AppSuite) TestNotInBL() {
 	}
 	expect := []*storage.IPNet{
 		{
-			ID:     1,
-			Subnet: "192.168.0.0/24",
+			IP:   "192.168.0.0/24",
+			Mask: "255.255.225.0",
 		},
 		{
-			ID:     2,
-			Subnet: "10.10.0.0/24",
+			IP:   "10.10.0.0/24",
+			Mask: "255.255.225.0",
 		},
 	}
 	s.mockStorage.EXPECT().GetBlackList(ctx).Return(expect, nil)
@@ -56,12 +56,12 @@ func (s *AppSuite) TestInBL() {
 	}
 	expect := []*storage.IPNet{
 		{
-			ID:     1,
-			Subnet: "192.168.0.0/8",
+			IP:   "192.168.0.0",
+			Mask: "255.0.0.0",
 		},
 		{
-			ID:     2,
-			Subnet: "10.10.0.0/24",
+			IP:   "10.10.0.0",
+			Mask: "255.255.225.0",
 		},
 	}
 	s.mockStorage.EXPECT().GetBlackList(ctx).Return(expect, nil)
@@ -79,12 +79,12 @@ func (s *AppSuite) TestNotInWL() {
 	}
 	expect := []*storage.IPNet{
 		{
-			ID:     1,
-			Subnet: "192.168.0.0/24",
+			IP:   "192.168.0.0",
+			Mask: "255.255.225.0",
 		},
 		{
-			ID:     2,
-			Subnet: "10.10.0.0/24",
+			IP:   "10.10.0.0",
+			Mask: "255.255.225.0",
 		},
 	}
 	s.mockStorage.EXPECT().GetWhiteList(ctx).Return(expect, nil)
@@ -102,12 +102,12 @@ func (s *AppSuite) TestInWL() {
 	}
 	expect := []*storage.IPNet{
 		{
-			ID:     1,
-			Subnet: "192.168.0.0/8",
+			IP:   "192.168.0.0",
+			Mask: "255.0.0.0",
 		},
 		{
-			ID:     2,
-			Subnet: "10.10.0.0/24",
+			IP:   "10.10.0.0",
+			Mask: "255.255.225.0",
 		},
 	}
 	s.mockStorage.EXPECT().GetWhiteList(ctx).Return(expect, nil)
@@ -123,10 +123,11 @@ func (s *AppSuite) TestAddBL() {
 		storage: s.mockStorage,
 		limiter: nil,
 	}
-	rec := &storage.IPNet{Subnet: "192.168.1.0/24"}
-	s.mockStorage.EXPECT().AddToBlackList(ctx, rec).Return(nil)
+	ip := "192.168.1.0"
+	mask := "255.255.255.0"
+	s.mockStorage.EXPECT().AddToBlackList(ctx, ip, mask).Return(nil)
 
-	err := a.AddToBlackList(ctx, "192.168.1.0", "255.255.255.0")
+	err := a.AddToBlackList(ctx, ip, mask)
 	s.Require().NoError(err)
 }
 
@@ -136,10 +137,11 @@ func (s *AppSuite) TestAddWL() {
 		storage: s.mockStorage,
 		limiter: nil,
 	}
-	rec := &storage.IPNet{Subnet: "192.168.1.0/24"}
-	s.mockStorage.EXPECT().AddToWhiteList(ctx, rec).Return(nil)
+	ip := "192.168.1.0"
+	mask := "255.255.255.0"
+	s.mockStorage.EXPECT().AddToWhiteList(ctx, ip, mask).Return(nil)
 
-	err := a.AddToWhiteList(ctx, "192.168.1.0", "255.255.255.0")
+	err := a.AddToWhiteList(ctx, ip, mask)
 	s.Require().NoError(err)
 }
 
@@ -149,9 +151,9 @@ func (s *AppSuite) TestRemoveBL() {
 		storage: s.mockStorage,
 		limiter: nil,
 	}
-	s.mockStorage.EXPECT().RemoveFromBlackList(ctx, 1).Return(nil)
+	s.mockStorage.EXPECT().RemoveFromBlackList(ctx, "ip", "mask").Return(nil)
 
-	err := a.RemoveFromBlackList(ctx, 1)
+	err := a.RemoveFromBlackList(ctx, "ip", "mask")
 	s.Require().NoError(err)
 }
 
@@ -161,9 +163,9 @@ func (s *AppSuite) TestRemoveWL() {
 		storage: s.mockStorage,
 		limiter: nil,
 	}
-	s.mockStorage.EXPECT().RemoveFromWhiteList(ctx, 1).Return(nil)
+	s.mockStorage.EXPECT().RemoveFromWhiteList(ctx, "ip", "mask").Return(nil)
 
-	err := a.RemoveFromWhiteList(ctx, 1)
+	err := a.RemoveFromWhiteList(ctx, "ip", "mask")
 	s.Require().NoError(err)
 }
 

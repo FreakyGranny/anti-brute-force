@@ -8,10 +8,10 @@ import (
 
 // Storage storage provider.
 type Storage interface {
-	AddToWhiteList(ctx context.Context, e *IPNet) error
-	AddToBlackList(ctx context.Context, e *IPNet) error
-	RemoveFromWhiteList(ctx context.Context, id int) error
-	RemoveFromBlackList(ctx context.Context, id int) error
+	AddToWhiteList(ctx context.Context, ip, mask string) error
+	AddToBlackList(ctx context.Context, ip, mask string) error
+	RemoveFromWhiteList(ctx context.Context, ip, mask string) error
+	RemoveFromBlackList(ctx context.Context, ip, mask string) error
 	GetBlackList(ctx context.Context) ([]*IPNet, error)
 	GetWhiteList(ctx context.Context) ([]*IPNet, error)
 	Close() error
@@ -19,6 +19,6 @@ type Storage interface {
 
 // IPNet subnet.
 type IPNet struct {
-	ID     int    `db:"id"`
-	Subnet string `db:"subnet"`
+	IP   string `db:"ip"`
+	Mask string `db:"mask"`
 }
