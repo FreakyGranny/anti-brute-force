@@ -13,24 +13,32 @@ import (
 type AppSuite struct {
 	suite.Suite
 	mockStorageCtl *gomock.Controller
-	mockStorage    *mocks.MockStorage
+	mockStorage    *mocks.MockWriteStorage
+	mockKeeperCtl  *gomock.Controller
+	mockKeeper     *mocks.MockIPKeeper
+	mockLimiterCtl *gomock.Controller
+	mockLimiter    *mocks.MockLimiter
+	application    *App
+	ctx            context.Context
 }
 
 func (s *AppSuite) SetupTest() {
 	s.mockStorageCtl = gomock.NewController(s.T())
-	s.mockStorage = mocks.NewMockStorage(s.mockStorageCtl)
+	s.mockStorage = mocks.NewMockWriteStorage(s.mockStorageCtl)
+	s.mockKeeperCtl = gomock.NewController(s.T())
+	s.mockKeeper = mocks.NewMockIPKeeper(s.mockKeeperCtl)
+	s.mockLimiterCtl = gomock.NewController(s.T())
+	s.mockLimiter = mocks.NewMockLimiter(s.mockLimiterCtl)
+	s.application = New(s.mockStorage, s.mockKeeper, s.mockLimiter)
+	s.ctx = context.Background()
 }
 
 func (s *AppSuite) TearDownTest() {
 	s.mockStorageCtl.Finish()
+	s.mockKeeperCtl.Finish()
 }
 
-func (s *AppSuite) TestNotInBL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
+func (s *AppSuite) TestIpNotAtBlacklist() {
 	expect := []*storage.IPNet{
 		{
 			IP:   "192.168.0.0/24",
@@ -41,19 +49,20 @@ func (s *AppSuite) TestNotInBL() {
 			Mask: "255.255.225.0",
 		},
 	}
-	s.mockStorage.EXPECT().GetBlackList(ctx).Return(expect, nil)
+	login := "superuser"
+	pass := "password"
+	ip := "192.168.23.1"
 
-	c, err := a.CheckBlackList(ctx, "127.0.0.1")
+	s.mockKeeper.EXPECT().GetWhitelist().Return(nil)
+	s.mockKeeper.EXPECT().GetBlacklist().Return(expect)
+	s.mockLimiter.EXPECT().CheckLimits(s.ctx, login, pass, ip).Return(true, nil)
+
+	result, err := s.application.CheckRate(s.ctx, login, pass, ip)
 	s.Require().NoError(err)
-	s.Require().False(c)
+	s.Require().True(result)
 }
 
-func (s *AppSuite) TestInBL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
+func (s *AppSuite) TestIpAtBlacklist() {
 	expect := []*storage.IPNet{
 		{
 			IP:   "192.168.0.0",
@@ -64,19 +73,15 @@ func (s *AppSuite) TestInBL() {
 			Mask: "255.255.225.0",
 		},
 	}
-	s.mockStorage.EXPECT().GetBlackList(ctx).Return(expect, nil)
+	s.mockKeeper.EXPECT().GetWhitelist().Return(nil)
+	s.mockKeeper.EXPECT().GetBlacklist().Return(expect)
 
-	c, err := a.CheckBlackList(ctx, "192.168.23.1")
+	result, err := s.application.CheckRate(s.ctx, "user", "pass", "192.168.23.1")
 	s.Require().NoError(err)
-	s.Require().True(c)
+	s.Require().False(result)
 }
 
-func (s *AppSuite) TestNotInWL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
+func (s *AppSuite) TestIpNotAtWhitelist() {
 	expect := []*storage.IPNet{
 		{
 			IP:   "192.168.0.0",
@@ -87,19 +92,19 @@ func (s *AppSuite) TestNotInWL() {
 			Mask: "255.255.225.0",
 		},
 	}
-	s.mockStorage.EXPECT().GetWhiteList(ctx).Return(expect, nil)
+	login := "USER"
+	pass := "PASS"
+	ip := "127.0.0.1"
+	s.mockKeeper.EXPECT().GetWhitelist().Return(expect)
+	s.mockKeeper.EXPECT().GetBlacklist().Return(nil)
+	s.mockLimiter.EXPECT().CheckLimits(s.ctx, login, pass, ip).Return(true, nil)
 
-	c, err := a.CheckWhiteList(ctx, "127.0.0.1")
+	result, err := s.application.CheckRate(s.ctx, login, pass, ip)
 	s.Require().NoError(err)
-	s.Require().False(c)
+	s.Require().True(result)
 }
 
-func (s *AppSuite) TestInWL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
+func (s *AppSuite) TestIpAtWhitelist() {
 	expect := []*storage.IPNet{
 		{
 			IP:   "192.168.0.0",
@@ -110,62 +115,49 @@ func (s *AppSuite) TestInWL() {
 			Mask: "255.255.225.0",
 		},
 	}
-	s.mockStorage.EXPECT().GetWhiteList(ctx).Return(expect, nil)
+	s.mockKeeper.EXPECT().GetWhitelist().Return(expect)
 
-	c, err := a.CheckWhiteList(ctx, "192.168.23.1")
+	result, err := s.application.CheckRate(s.ctx, "what-ever", "dont-care", "192.168.23.1")
 	s.Require().NoError(err)
-	s.Require().True(c)
+	s.Require().True(result)
 }
 
 func (s *AppSuite) TestAddBL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
 	ip := "192.168.1.0"
 	mask := "255.255.255.0"
-	s.mockStorage.EXPECT().AddToBlackList(ctx, ip, mask).Return(nil)
+	s.mockStorage.EXPECT().AddToBlackList(s.ctx, ip, mask).Return(nil)
 
-	err := a.AddToBlackList(ctx, ip, mask)
+	err := s.application.AddToBlackList(s.ctx, ip, mask)
 	s.Require().NoError(err)
 }
 
 func (s *AppSuite) TestAddWL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
 	ip := "192.168.1.0"
 	mask := "255.255.255.0"
-	s.mockStorage.EXPECT().AddToWhiteList(ctx, ip, mask).Return(nil)
+	s.mockStorage.EXPECT().AddToWhiteList(s.ctx, ip, mask).Return(nil)
 
-	err := a.AddToWhiteList(ctx, ip, mask)
+	err := s.application.AddToWhiteList(s.ctx, ip, mask)
 	s.Require().NoError(err)
 }
 
 func (s *AppSuite) TestRemoveBL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
-	s.mockStorage.EXPECT().RemoveFromBlackList(ctx, "ip", "mask").Return(nil)
-
-	err := a.RemoveFromBlackList(ctx, "ip", "mask")
+	s.mockStorage.EXPECT().RemoveFromBlackList(s.ctx, "ip", "mask").Return(nil)
+	err := s.application.RemoveFromBlackList(s.ctx, "ip", "mask")
 	s.Require().NoError(err)
 }
 
 func (s *AppSuite) TestRemoveWL() {
-	ctx := context.Background()
-	a := App{
-		storage: s.mockStorage,
-		limiter: nil,
-	}
-	s.mockStorage.EXPECT().RemoveFromWhiteList(ctx, "ip", "mask").Return(nil)
+	s.mockStorage.EXPECT().RemoveFromWhiteList(s.ctx, "ip", "mask").Return(nil)
+	err := s.application.RemoveFromWhiteList(s.ctx, "ip", "mask")
+	s.Require().NoError(err)
+}
 
-	err := a.RemoveFromWhiteList(ctx, "ip", "mask")
+func (s *AppSuite) TestDropStat() {
+	login := "user"
+	pass := "pass"
+	s.mockLimiter.EXPECT().DropBuckets(s.ctx, login, pass).Return(nil)
+
+	err := s.application.DropStat(s.ctx, login, pass)
 	s.Require().NoError(err)
 }
 

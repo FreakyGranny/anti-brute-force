@@ -12,8 +12,16 @@ import (
 
 const period = time.Minute
 
-// Limiter limit checker.
-type Limiter struct {
+//go:generate mockgen -source=$GOFILE -destination=../mocks/limiter_mock.go -package=mocks Limiter
+
+// Limiter ...
+type Limiter interface {
+	CheckLimits(ctx context.Context, login string, password string, ip string) (bool, error)
+	DropBuckets(ctx context.Context, login string, password string) error
+}
+
+// CacheLimiter limit checker based on cache.
+type CacheLimiter struct {
 	cache         cache.Cache
 	clock         clockwork.Clock
 	loginLimit    int
@@ -21,9 +29,9 @@ type Limiter struct {
 	IPLimit       int
 }
 
-// NewLimiter returns new limiter instance.
-func NewLimiter(cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, ipLimit int) *Limiter {
-	return &Limiter{
+// NewCacheLimiter returns new cache limiter instance.
+func NewCacheLimiter(cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, ipLimit int) *CacheLimiter {
+	return &CacheLimiter{
 		cache:         cache,
 		clock:         clock,
 		loginLimit:    loginLimit,
@@ -37,7 +45,7 @@ func buildKey(id string, val string, min int) string {
 }
 
 // CheckLimits returns true if request is allowed.
-func (lim *Limiter) CheckLimits(ctx context.Context, login string, password string, ip string) (bool, error) {
+func (lim *CacheLimiter) CheckLimits(ctx context.Context, login string, password string, ip string) (bool, error) {
 	p := lim.clock.Now().Minute()
 
 	lKey := buildKey("LOGIN", login, p)
@@ -83,7 +91,7 @@ func (lim *Limiter) CheckLimits(ctx context.Context, login string, password stri
 }
 
 // DropBuckets deletes buckets for given login password.
-func (lim *Limiter) DropBuckets(ctx context.Context, login string, password string) error {
+func (lim *CacheLimiter) DropBuckets(ctx context.Context, login string, password string) error {
 	p := lim.clock.Now().Minute()
 
 	lKey := buildKey("LOGIN", login, p)

@@ -14,14 +14,10 @@ import (
 func main() {
 	cfg, err := NewConfig()
 	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("unable initialize config")
+		log.Fatal().Err(err).Msg("unable initialize config")
 	}
 	if err := logger.SetLogLevel(cfg.Logger.Level); err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("unable to initialize logger")
+		log.Fatal().Err(err).Msg("unable to initialize logger")
 	}
 	dsn := storage.BuildDsn(
 		cfg.DB.Host,

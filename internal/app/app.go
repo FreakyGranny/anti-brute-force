@@ -4,9 +4,7 @@ import (
 	"context"
 	"net"
 
-	"github.com/FreakyGranny/anti-brute-force/internal/cache"
 	"github.com/FreakyGranny/anti-brute-force/internal/storage"
-	"github.com/jonboulle/clockwork"
 )
 
 // Application business logic.
@@ -21,25 +19,33 @@ type Application interface {
 
 // App ...
 type App struct {
-	storage storage.Storage
-	limiter *Limiter
+	storage storage.WriteStorage
+	limiter Limiter
+	keeper  IPKeeper
 }
 
 // New returns application instance.
-func New(storage storage.Storage, cache cache.Cache, clock clockwork.Clock, loginLimit int, passwordLimit int, ipLimit int) *App {
+func New(storage storage.WriteStorage, keeper IPKeeper, limiter Limiter) *App {
 	return &App{
 		storage: storage,
-		limiter: NewLimiter(
-			cache,
-			clock,
-			loginLimit,
-			passwordLimit,
-			ipLimit,
-		),
+		limiter: limiter,
+		keeper:  keeper,
 	}
 }
 
-func ipInSubnet(ip string, subnets []*storage.IPNet) (bool, error) {
+// CheckRate returns true if request is allowed.
+func (a *App) CheckRate(ctx context.Context, login, password, ip string) (bool, error) {
+	if ipInSubnet(ip, a.keeper.GetWhitelist()) {
+		return true, nil
+	}
+	if ipInSubnet(ip, a.keeper.GetBlacklist()) {
+		return false, nil
+	}
+
+	return a.limiter.CheckLimits(ctx, login, password, ip)
+}
+
+func ipInSubnet(ip string, subnets []*storage.IPNet) bool {
 	for _, n := range subnets {
 		byteMask := net.ParseIP(n.Mask).To4()
 		ipv4Net := net.IPNet{
@@ -49,51 +55,11 @@ func ipInSubnet(ip string, subnets []*storage.IPNet) (bool, error) {
 
 		contains := ipv4Net.Contains(net.ParseIP(ip))
 		if contains {
-			return true, nil
+			return true
 		}
 	}
 
-	return false, nil
-}
-
-// CheckBlackList returns true if request in black list.
-func (a *App) CheckBlackList(ctx context.Context, ip string) (bool, error) {
-	sns, err := a.storage.GetBlackList(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	return ipInSubnet(ip, sns)
-}
-
-// CheckWhiteList returns true if request in white list.
-func (a *App) CheckWhiteList(ctx context.Context, ip string) (bool, error) {
-	sns, err := a.storage.GetWhiteList(ctx)
-	if err != nil {
-		return false, err
-	}
-
-	return ipInSubnet(ip, sns)
-}
-
-// CheckRate returns true if request is allowed.
-func (a *App) CheckRate(ctx context.Context, login, password, ip string) (bool, error) {
-	in, err := a.CheckWhiteList(ctx, ip)
-	if err != nil {
-		return false, err
-	}
-	if in {
-		return true, nil
-	}
-	in, err = a.CheckBlackList(ctx, ip)
-	if err != nil {
-		return false, err
-	}
-	if in {
-		return false, nil
-	}
-
-	return a.limiter.CheckLimits(ctx, login, password, ip)
+	return false
 }
 
 // DropStat drops all stats for given login, password.

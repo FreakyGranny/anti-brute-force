@@ -13,47 +13,47 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-type LimiterSuite struct {
+type CacheLimiterSuite struct {
 	suite.Suite
 	mockCacheCtl *gomock.Controller
 	mockCache    *mocks.MockCache
 	ctx          context.Context
 }
 
-func (s *LimiterSuite) SetupTest() {
+func (s *CacheLimiterSuite) SetupTest() {
 	s.mockCacheCtl = gomock.NewController(s.T())
 	s.mockCache = mocks.NewMockCache(s.mockCacheCtl)
 	s.ctx = context.Background()
 }
 
-func (s *LimiterSuite) TearDownTest() {
+func (s *CacheLimiterSuite) TearDownTest() {
 	s.mockCacheCtl.Finish()
 }
 
-func (s *LimiterSuite) setLoginExpect(login string, minute, loginReturn int) {
+func (s *CacheLimiterSuite) setLoginExpect(login string, minute, loginReturn int) {
 	strMinute := strconv.Itoa(minute)
 	loginKey := strings.Join([]string{"LOGIN", login, strMinute}, ":")
 	s.mockCache.EXPECT().Incr(s.ctx, loginKey, time.Minute).Return(nil)
 	s.mockCache.EXPECT().Get(s.ctx, loginKey).Return(loginReturn, nil)
 }
 
-func (s *LimiterSuite) setPassExpect(password string, minute, passReturn int) {
+func (s *CacheLimiterSuite) setPassExpect(password string, minute, passReturn int) {
 	strMinute := strconv.Itoa(minute)
 	passKey := strings.Join([]string{"PASS", password, strMinute}, ":")
 	s.mockCache.EXPECT().Incr(s.ctx, passKey, time.Minute).Return(nil)
 	s.mockCache.EXPECT().Get(s.ctx, passKey).Return(passReturn, nil)
 }
 
-func (s *LimiterSuite) setIPExpect(ip string, minute, ipReturn int) {
+func (s *CacheLimiterSuite) setIPExpect(ip string, minute, ipReturn int) {
 	strMinute := strconv.Itoa(minute)
 	ipKey := strings.Join([]string{"IP", ip, strMinute}, ":")
 	s.mockCache.EXPECT().Incr(s.ctx, ipKey, time.Minute).Return(nil)
 	s.mockCache.EXPECT().Get(s.ctx, ipKey).Return(ipReturn, nil)
 }
 
-func (s *LimiterSuite) TestSimple() {
+func (s *CacheLimiterSuite) TestSimple() {
 	fakeTime := clockwork.NewFakeClockAt(time.Date(2020, time.September, 8, 11, 6, 0, 0, time.UTC))
-	lim := NewLimiter(s.mockCache, fakeTime, 2, 4, 6)
+	lim := NewCacheLimiter(s.mockCache, fakeTime, 2, 4, 6)
 
 	s.setLoginExpect("test", 6, 1)
 	s.setPassExpect("xpass", 6, 1)
@@ -65,9 +65,9 @@ func (s *LimiterSuite) TestSimple() {
 	s.Require().True(c)
 }
 
-func (s *LimiterSuite) TestLoginLimit() {
+func (s *CacheLimiterSuite) TestLoginLimit() {
 	fakeTime := clockwork.NewFakeClockAt(time.Date(2020, time.September, 8, 11, 6, 0, 0, time.UTC))
-	lim := NewLimiter(s.mockCache, fakeTime, 2, 4, 6)
+	lim := NewCacheLimiter(s.mockCache, fakeTime, 2, 4, 6)
 
 	s.setLoginExpect("test", 6, 3)
 
@@ -77,9 +77,9 @@ func (s *LimiterSuite) TestLoginLimit() {
 	s.Require().False(c)
 }
 
-func (s *LimiterSuite) TestPassLimit() {
+func (s *CacheLimiterSuite) TestPassLimit() {
 	fakeTime := clockwork.NewFakeClockAt(time.Date(2020, time.September, 8, 11, 6, 0, 0, time.UTC))
-	lim := NewLimiter(s.mockCache, fakeTime, 2, 4, 6)
+	lim := NewCacheLimiter(s.mockCache, fakeTime, 2, 4, 6)
 
 	s.setLoginExpect("test", 6, 1)
 	s.setPassExpect("xpass", 6, 5)
@@ -90,9 +90,9 @@ func (s *LimiterSuite) TestPassLimit() {
 	s.Require().False(c)
 }
 
-func (s *LimiterSuite) TestIPLimit() {
+func (s *CacheLimiterSuite) TestIPLimit() {
 	fakeTime := clockwork.NewFakeClockAt(time.Date(2020, time.September, 24, 9, 39, 0, 0, time.UTC))
-	lim := NewLimiter(s.mockCache, fakeTime, 2, 4, 6)
+	lim := NewCacheLimiter(s.mockCache, fakeTime, 2, 4, 6)
 
 	s.setLoginExpect("login", 39, 2)
 	s.setPassExpect("supersecretpassword", 39, 3)
@@ -104,9 +104,9 @@ func (s *LimiterSuite) TestIPLimit() {
 	s.Require().False(c)
 }
 
-func (s *LimiterSuite) TestDrop() {
+func (s *CacheLimiterSuite) TestDrop() {
 	fakeTime := clockwork.NewFakeClockAt(time.Date(2020, time.September, 8, 15, 31, 0, 0, time.UTC))
-	lim := NewLimiter(s.mockCache, fakeTime, 2, 4, 6)
+	lim := NewCacheLimiter(s.mockCache, fakeTime, 2, 4, 6)
 
 	s.mockCache.EXPECT().Del(s.ctx, "LOGIN:test:31").Return(nil)
 	s.mockCache.EXPECT().Del(s.ctx, "PASS:xpass:31").Return(nil)
@@ -115,6 +115,6 @@ func (s *LimiterSuite) TestDrop() {
 	s.Require().NoError(err)
 }
 
-func TestLimiterSuite(t *testing.T) {
-	suite.Run(t, new(LimiterSuite))
+func TestCacheLimiterSuite(t *testing.T) {
+	suite.Run(t, new(CacheLimiterSuite))
 }

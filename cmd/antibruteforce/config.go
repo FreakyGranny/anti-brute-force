@@ -31,6 +31,7 @@ type Config struct {
 		Host     string `env:"REDIS_HOST" envDefault:"localhost"`
 		Port     int    `env:"REDIS_PORT" envDefault:"6379"`
 	}
+	Refresh string `env:"refresh" envDefault:"1s"`
 }
 
 // NewConfig returns configuration.

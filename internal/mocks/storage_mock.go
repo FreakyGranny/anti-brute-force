@@ -11,31 +11,31 @@ import (
 	reflect "reflect"
 )
 
-// MockStorage is a mock of Storage interface
-type MockStorage struct {
+// MockWriteStorage is a mock of WriteStorage interface
+type MockWriteStorage struct {
 	ctrl     *gomock.Controller
-	recorder *MockStorageMockRecorder
+	recorder *MockWriteStorageMockRecorder
 }
 
-// MockStorageMockRecorder is the mock recorder for MockStorage
-type MockStorageMockRecorder struct {
-	mock *MockStorage
+// MockWriteStorageMockRecorder is the mock recorder for MockWriteStorage
+type MockWriteStorageMockRecorder struct {
+	mock *MockWriteStorage
 }
 
-// NewMockStorage creates a new mock instance
-func NewMockStorage(ctrl *gomock.Controller) *MockStorage {
-	mock := &MockStorage{ctrl: ctrl}
-	mock.recorder = &MockStorageMockRecorder{mock}
+// NewMockWriteStorage creates a new mock instance
+func NewMockWriteStorage(ctrl *gomock.Controller) *MockWriteStorage {
+	mock := &MockWriteStorage{ctrl: ctrl}
+	mock.recorder = &MockWriteStorageMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
+func (m *MockWriteStorage) EXPECT() *MockWriteStorageMockRecorder {
 	return m.recorder
 }
 
 // AddToWhiteList mocks base method
-func (m *MockStorage) AddToWhiteList(ctx context.Context, ip, mask string) error {
+func (m *MockWriteStorage) AddToWhiteList(ctx context.Context, ip, mask string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddToWhiteList", ctx, ip, mask)
 	ret0, _ := ret[0].(error)
@@ -43,13 +43,13 @@ func (m *MockStorage) AddToWhiteList(ctx context.Context, ip, mask string) error
 }
 
 // AddToWhiteList indicates an expected call of AddToWhiteList
-func (mr *MockStorageMockRecorder) AddToWhiteList(ctx, ip, mask interface{}) *gomock.Call {
+func (mr *MockWriteStorageMockRecorder) AddToWhiteList(ctx, ip, mask interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToWhiteList", reflect.TypeOf((*MockStorage)(nil).AddToWhiteList), ctx, ip, mask)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToWhiteList", reflect.TypeOf((*MockWriteStorage)(nil).AddToWhiteList), ctx, ip, mask)
 }
 
 // AddToBlackList mocks base method
-func (m *MockStorage) AddToBlackList(ctx context.Context, ip, mask string) error {
+func (m *MockWriteStorage) AddToBlackList(ctx context.Context, ip, mask string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddToBlackList", ctx, ip, mask)
 	ret0, _ := ret[0].(error)
@@ -57,13 +57,13 @@ func (m *MockStorage) AddToBlackList(ctx context.Context, ip, mask string) error
 }
 
 // AddToBlackList indicates an expected call of AddToBlackList
-func (mr *MockStorageMockRecorder) AddToBlackList(ctx, ip, mask interface{}) *gomock.Call {
+func (mr *MockWriteStorageMockRecorder) AddToBlackList(ctx, ip, mask interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToBlackList", reflect.TypeOf((*MockStorage)(nil).AddToBlackList), ctx, ip, mask)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToBlackList", reflect.TypeOf((*MockWriteStorage)(nil).AddToBlackList), ctx, ip, mask)
 }
 
 // RemoveFromWhiteList mocks base method
-func (m *MockStorage) RemoveFromWhiteList(ctx context.Context, ip, mask string) error {
+func (m *MockWriteStorage) RemoveFromWhiteList(ctx context.Context, ip, mask string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveFromWhiteList", ctx, ip, mask)
 	ret0, _ := ret[0].(error)
@@ -71,13 +71,13 @@ func (m *MockStorage) RemoveFromWhiteList(ctx context.Context, ip, mask string) 
 }
 
 // RemoveFromWhiteList indicates an expected call of RemoveFromWhiteList
-func (mr *MockStorageMockRecorder) RemoveFromWhiteList(ctx, ip, mask interface{}) *gomock.Call {
+func (mr *MockWriteStorageMockRecorder) RemoveFromWhiteList(ctx, ip, mask interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFromWhiteList", reflect.TypeOf((*MockStorage)(nil).RemoveFromWhiteList), ctx, ip, mask)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFromWhiteList", reflect.TypeOf((*MockWriteStorage)(nil).RemoveFromWhiteList), ctx, ip, mask)
 }
 
 // RemoveFromBlackList mocks base method
-func (m *MockStorage) RemoveFromBlackList(ctx context.Context, ip, mask string) error {
+func (m *MockWriteStorage) RemoveFromBlackList(ctx context.Context, ip, mask string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveFromBlackList", ctx, ip, mask)
 	ret0, _ := ret[0].(error)
@@ -85,13 +85,36 @@ func (m *MockStorage) RemoveFromBlackList(ctx context.Context, ip, mask string) 
 }
 
 // RemoveFromBlackList indicates an expected call of RemoveFromBlackList
-func (mr *MockStorageMockRecorder) RemoveFromBlackList(ctx, ip, mask interface{}) *gomock.Call {
+func (mr *MockWriteStorageMockRecorder) RemoveFromBlackList(ctx, ip, mask interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFromBlackList", reflect.TypeOf((*MockStorage)(nil).RemoveFromBlackList), ctx, ip, mask)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveFromBlackList", reflect.TypeOf((*MockWriteStorage)(nil).RemoveFromBlackList), ctx, ip, mask)
+}
+
+// MockReadStorage is a mock of ReadStorage interface
+type MockReadStorage struct {
+	ctrl     *gomock.Controller
+	recorder *MockReadStorageMockRecorder
+}
+
+// MockReadStorageMockRecorder is the mock recorder for MockReadStorage
+type MockReadStorageMockRecorder struct {
+	mock *MockReadStorage
+}
+
+// NewMockReadStorage creates a new mock instance
+func NewMockReadStorage(ctrl *gomock.Controller) *MockReadStorage {
+	mock := &MockReadStorage{ctrl: ctrl}
+	mock.recorder = &MockReadStorageMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockReadStorage) EXPECT() *MockReadStorageMockRecorder {
+	return m.recorder
 }
 
 // GetBlackList mocks base method
-func (m *MockStorage) GetBlackList(ctx context.Context) ([]*storage.IPNet, error) {
+func (m *MockReadStorage) GetBlackList(ctx context.Context) ([]*storage.IPNet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBlackList", ctx)
 	ret0, _ := ret[0].([]*storage.IPNet)
@@ -100,13 +123,13 @@ func (m *MockStorage) GetBlackList(ctx context.Context) ([]*storage.IPNet, error
 }
 
 // GetBlackList indicates an expected call of GetBlackList
-func (mr *MockStorageMockRecorder) GetBlackList(ctx interface{}) *gomock.Call {
+func (mr *MockReadStorageMockRecorder) GetBlackList(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlackList", reflect.TypeOf((*MockStorage)(nil).GetBlackList), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBlackList", reflect.TypeOf((*MockReadStorage)(nil).GetBlackList), ctx)
 }
 
 // GetWhiteList mocks base method
-func (m *MockStorage) GetWhiteList(ctx context.Context) ([]*storage.IPNet, error) {
+func (m *MockReadStorage) GetWhiteList(ctx context.Context) ([]*storage.IPNet, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWhiteList", ctx)
 	ret0, _ := ret[0].([]*storage.IPNet)
@@ -115,21 +138,7 @@ func (m *MockStorage) GetWhiteList(ctx context.Context) ([]*storage.IPNet, error
 }
 
 // GetWhiteList indicates an expected call of GetWhiteList
-func (mr *MockStorageMockRecorder) GetWhiteList(ctx interface{}) *gomock.Call {
+func (mr *MockReadStorageMockRecorder) GetWhiteList(ctx interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWhiteList", reflect.TypeOf((*MockStorage)(nil).GetWhiteList), ctx)
-}
-
-// Close mocks base method
-func (m *MockStorage) Close() error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Close")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// Close indicates an expected call of Close
-func (mr *MockStorageMockRecorder) Close() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Close", reflect.TypeOf((*MockStorage)(nil).Close))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWhiteList", reflect.TypeOf((*MockReadStorage)(nil).GetWhiteList), ctx)
 }
