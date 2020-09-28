@@ -4,6 +4,7 @@ generate:
 build:
 	go build -o ./bin/ab_force ./cmd/antibruteforce
 	go build -o ./bin/migrate ./cmd/migrate
+	go build -o ./bin/cli ./cmd/cli
 
 test:
 	go test -race ./internal/...
@@ -11,7 +12,7 @@ test:
 lint:
 	golangci-lint run ./...
 
-run: build
+run:
 	docker-compose -f deployments/docker-compose.yaml -p abf up
 
 down:

@@ -12,6 +12,7 @@ require (
 	github.com/jonboulle/clockwork v0.2.1
 	github.com/pressly/goose v2.6.0+incompatible
 	github.com/rs/zerolog v1.20.0
+	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.6.1
 	google.golang.org/grpc v1.32.0
 	google.golang.org/protobuf v1.23.0
