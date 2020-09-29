@@ -26,7 +26,3 @@ func getGRPCClient() (server.ABruteforceClient, error) {
 
 	return server.NewABruteforceClient(conn), nil
 }
-
-func isValidIP(ip string) bool {
-	return net.ParseIP(ip) != nil
-}

@@ -27,6 +27,8 @@ func (s *Service) Auth(ctx context.Context, req *AuthRequest) (*AuthResponse, er
 	switch err {
 	case nil:
 		return &AuthResponse{Ok: ok}, nil
+	case app.ErrInvalidArgument:
+		return nil, status.Error(codes.InvalidArgument, "ip/mask is not valid")
 	default:
 		return nil, status.Error(codes.Internal, "unable to check rate")
 	}
@@ -45,39 +47,51 @@ func (s *Service) DropStat(ctx context.Context, req *DropStatRequest) (*empty.Em
 // AddToWhiteList adds ip to white list.
 func (s *Service) AddToWhiteList(ctx context.Context, req *AddSubnetRequest) (*AddSubnetResponse, error) {
 	err := s.app.AddToWhiteList(ctx, req.GetIp(), req.GetMask())
-	if err != nil {
+	switch err {
+	case nil:
+		return &AddSubnetResponse{Ip: req.GetIp(), Mask: req.GetMask()}, nil
+	case app.ErrInvalidArgument:
+		return nil, status.Error(codes.InvalidArgument, "ip/mask is not valid")
+	default:
 		return nil, status.Error(codes.Internal, "unable to add to white list")
 	}
-
-	return &AddSubnetResponse{Ip: req.GetIp(), Mask: req.GetMask()}, nil
 }
 
 // AddToBlackList adds ip to black list.
 func (s *Service) AddToBlackList(ctx context.Context, req *AddSubnetRequest) (*AddSubnetResponse, error) {
 	err := s.app.AddToBlackList(ctx, req.GetIp(), req.GetMask())
-	if err != nil {
+	switch err {
+	case nil:
+		return &AddSubnetResponse{Ip: req.GetIp(), Mask: req.GetMask()}, nil
+	case app.ErrInvalidArgument:
+		return nil, status.Error(codes.InvalidArgument, "ip/mask is not valid")
+	default:
 		return nil, status.Error(codes.Internal, "unable to add to black list")
 	}
-
-	return &AddSubnetResponse{Ip: req.GetIp(), Mask: req.GetMask()}, nil
 }
 
 // RemoveFromWhiteList removes ip from white list.
 func (s *Service) RemoveFromWhiteList(ctx context.Context, req *RemoveSubnetRequest) (*empty.Empty, error) {
 	err := s.app.RemoveFromWhiteList(ctx, req.GetIp(), req.GetMask())
-	if err != nil {
+	switch err {
+	case nil:
+		return &empty.Empty{}, nil
+	case app.ErrInvalidArgument:
+		return nil, status.Error(codes.InvalidArgument, "ip/mask is not valid")
+	default:
 		return nil, status.Error(codes.Internal, "unable to remove from white list")
 	}
-
-	return &empty.Empty{}, nil
 }
 
 // RemoveFromBlackList removes ip from black list.
 func (s *Service) RemoveFromBlackList(ctx context.Context, req *RemoveSubnetRequest) (*empty.Empty, error) {
 	err := s.app.RemoveFromBlackList(ctx, req.GetIp(), req.GetMask())
-	if err != nil {
+	switch err {
+	case nil:
+		return &empty.Empty{}, nil
+	case app.ErrInvalidArgument:
+		return nil, status.Error(codes.InvalidArgument, "ip/mask is not valid")
+	default:
 		return nil, status.Error(codes.Internal, "unable to remove from black list")
 	}
-
-	return &empty.Empty{}, nil
 }

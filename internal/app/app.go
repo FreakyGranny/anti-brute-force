@@ -2,10 +2,14 @@ package app
 
 import (
 	"context"
+	"errors"
 	"net"
 
 	"github.com/FreakyGranny/anti-brute-force/internal/storage"
 )
+
+// ErrInvalidArgument given string is not valid ip.
+var ErrInvalidArgument = errors.New("invalid argument")
 
 // Application business logic.
 type Application interface {
@@ -17,7 +21,7 @@ type Application interface {
 	CheckRate(ctx context.Context, login, password, ip string) (bool, error)
 }
 
-// App ...
+// App business logic implementation.
 type App struct {
 	storage storage.WriteStorage
 	limiter Limiter
@@ -35,6 +39,9 @@ func New(storage storage.WriteStorage, keeper IPKeeper, limiter Limiter) *App {
 
 // CheckRate returns true if request is allowed.
 func (a *App) CheckRate(ctx context.Context, login, password, ip string) (bool, error) {
+	if !IsValidIPFormat(ip) {
+		return false, ErrInvalidArgument
+	}
 	if ipInSubnet(ip, a.keeper.GetWhitelist()) {
 		return true, nil
 	}
@@ -69,20 +76,41 @@ func (a *App) DropStat(ctx context.Context, login, password string) error {
 
 // AddToBlackList adding ip and mask to blacklist.
 func (a *App) AddToBlackList(ctx context.Context, ip, mask string) error {
+	if !IsValidIPFormat(ip) || !IsValidIPFormat(mask) {
+		return ErrInvalidArgument
+	}
+
 	return a.storage.AddToBlackList(ctx, ip, mask)
 }
 
 // AddToWhiteList adding ip and mask to whitelist.
 func (a *App) AddToWhiteList(ctx context.Context, ip, mask string) error {
+	if !IsValidIPFormat(ip) || !IsValidIPFormat(mask) {
+		return ErrInvalidArgument
+	}
+
 	return a.storage.AddToWhiteList(ctx, ip, mask)
 }
 
 // RemoveFromWhiteList removes record from whitelist.
 func (a *App) RemoveFromWhiteList(ctx context.Context, ip, mask string) error {
+	if !IsValidIPFormat(ip) || !IsValidIPFormat(mask) {
+		return ErrInvalidArgument
+	}
+
 	return a.storage.RemoveFromWhiteList(ctx, ip, mask)
 }
 
 // RemoveFromBlackList removes record from blacklist.
 func (a *App) RemoveFromBlackList(ctx context.Context, ip, mask string) error {
+	if !IsValidIPFormat(ip) || !IsValidIPFormat(mask) {
+		return ErrInvalidArgument
+	}
+
 	return a.storage.RemoveFromBlackList(ctx, ip, mask)
+}
+
+// IsValidIPFormat check string is valid ip address or mask.
+func IsValidIPFormat(ip string) bool {
+	return net.ParseIP(ip) != nil
 }

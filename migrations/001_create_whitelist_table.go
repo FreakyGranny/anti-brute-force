@@ -14,8 +14,8 @@ func init() {
 func Up001(tx *sql.Tx) error {
 	_, err := tx.Exec(
 		`CREATE TABLE whitelist (
-			ip varchar NOT NULL,
-			mask varchar NOT NULL,
+			ip varchar(15) NOT NULL,
+			mask varchar(15) NOT NULL,
 			PRIMARY KEY (ip, mask));
 	`)
 	if err != nil {

@@ -35,7 +35,9 @@ jobs:
       after_success: bash <(curl -s https://codecov.io/bash)
 
     - stage: "Build"
-      name: "Build binary"
+      name: "Build service binary"
       script: go build -o ./bin/ab_force ./cmd/antibruteforce
-    - script: go build -o ./bin/migrate ./cmd/migrate
-    - script: go build -o ./bin/migrate ./cmd/cli
+    - name: "Build migrate binary"
+      script: go build -o ./bin/migrate ./cmd/migrate
+    - name: "Build cli binary"
+      script: go build -o ./bin/migrate ./cmd/cli

@@ -18,4 +18,7 @@ run:
 down:
 	docker-compose -f deployments/docker-compose.yaml -p abf down
 
-.PHONY: build test lint generate run down
+integration-tests:
+	./scripts/run_integration_test.sh
+
+.PHONY: build test lint generate run down integration-tests

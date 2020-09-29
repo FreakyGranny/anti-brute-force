@@ -3,6 +3,7 @@ module github.com/FreakyGranny/anti-brute-force
 go 1.14
 
 require (
+	github.com/bxcodec/faker/v3 v3.5.0
 	github.com/caarlos0/env/v6 v6.3.0
 	github.com/go-redis/redis/v8 v8.2.0
 	github.com/golang/mock v1.4.4

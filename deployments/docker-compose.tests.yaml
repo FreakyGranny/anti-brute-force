@@ -1,0 +1,9 @@
+version: "3"
+
+services:
+  integration-tests:
+    build:
+      context: ..
+      dockerfile: Dockerfile.integration
+    environment:
+      - GRPC_URL=grpc:50051

@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/FreakyGranny/anti-brute-force/internal/app"
 	"github.com/FreakyGranny/anti-brute-force/internal/server"
 	"github.com/spf13/cobra"
 )
@@ -32,10 +33,10 @@ func Remove(cmd *cobra.Command, args []string) error {
 	}
 	ip := args[0]
 	mask := args[1]
-	if !isValidIP(ip) {
+	if !app.IsValidIPFormat(ip) {
 		return errIPInvalid
 	}
-	if !isValidIP(mask) {
+	if !app.IsValidIPFormat(mask) {
 		return errMaskInvalid
 	}
 	client, err := getGRPCClient()

@@ -20,6 +20,7 @@ services:
     command: sh -c "/wait && /app/migrate"
     environment:
       - WAIT_HOSTS=db:5432
+      - WAIT_BEFORE_HOSTS=2
       - DB_USERNAME=abf
       - DB_PASSWORD=qwerty123
       - DB_HOST=db
@@ -40,6 +41,10 @@ services:
       - GRPC_HOST=0.0.0.0
       - REDIS_PASSWORD=sOmE_sEcUrE_pAsS
       - REDIS_HOST=redis
+      - LIMIT_USER=5
+      - LIMIT_PASSWORD=10
+      - LIMIT_IP=20
+      - IP_LIST_REFRESH=1s
     depends_on: [db, redis]
     ports:
       - "50051:50051"

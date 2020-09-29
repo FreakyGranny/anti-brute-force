@@ -26,9 +26,9 @@ func main() {
 	if err := logger.SetLogLevel(cfg.Logger.Level); err != nil {
 		log.Fatal().Err(err).Msg("unable to initialize logger")
 	}
-	refreshInterval, err := time.ParseDuration(cfg.Refresh)
+	refreshInterval, err := time.ParseDuration(cfg.IPListRefresh)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("wrong ip list refresh interval %s", cfg.Refresh)
+		log.Fatal().Err(err).Msgf("wrong ip list refresh interval %s", cfg.IPListRefresh)
 	}
 	db := storage.New(storage.BuildDsn(
 		cfg.DB.Host,
@@ -42,7 +42,7 @@ func main() {
 	keeper := app.NewMemIPKeeper(db)
 	ctx, keeperCancel := context.WithCancel(context.Background())
 	if err := keeper.Refresh(ctx); err != nil {
-		log.Error().Err(err).Msg("redis unavailable")
+		log.Error().Err(err).Msg("can't initialize black/white lists")
 		return
 	}
 	cache, err := cache.New(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)

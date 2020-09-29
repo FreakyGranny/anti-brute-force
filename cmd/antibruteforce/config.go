@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/caarlos0/env/v6"
 )
 
@@ -31,7 +33,7 @@ type Config struct {
 		Host     string `env:"REDIS_HOST" envDefault:"localhost"`
 		Port     int    `env:"REDIS_PORT" envDefault:"6379"`
 	}
-	Refresh string `env:"refresh" envDefault:"1s"`
+	IPListRefresh string `env:"IP_LIST_REFRESH" envDefault:"15s"`
 }
 
 // NewConfig returns configuration.
@@ -41,6 +43,7 @@ func NewConfig() (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(cfg.IPListRefresh)
 
 	return &cfg, nil
 }
