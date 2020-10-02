@@ -49,15 +49,15 @@ func (mr *MockLimiterMockRecorder) CheckLimits(ctx, login, password, ip interfac
 }
 
 // DropBuckets mocks base method
-func (m *MockLimiter) DropBuckets(ctx context.Context, login, password string) error {
+func (m *MockLimiter) DropBuckets(ctx context.Context, login, ip string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DropBuckets", ctx, login, password)
+	ret := m.ctrl.Call(m, "DropBuckets", ctx, login, ip)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // DropBuckets indicates an expected call of DropBuckets
-func (mr *MockLimiterMockRecorder) DropBuckets(ctx, login, password interface{}) *gomock.Call {
+func (mr *MockLimiterMockRecorder) DropBuckets(ctx, login, ip interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DropBuckets", reflect.TypeOf((*MockLimiter)(nil).DropBuckets), ctx, login, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DropBuckets", reflect.TypeOf((*MockLimiter)(nil).DropBuckets), ctx, login, ip)
 }

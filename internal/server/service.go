@@ -34,9 +34,9 @@ func (s *Service) Auth(ctx context.Context, req *AuthRequest) (*AuthResponse, er
 	}
 }
 
-// DropStat drops buckets for given login, password.
+// DropStat drops buckets for given login, ip.
 func (s *Service) DropStat(ctx context.Context, req *DropStatRequest) (*empty.Empty, error) {
-	err := s.app.DropStat(ctx, req.GetLogin(), req.GetPassword())
+	err := s.app.DropStat(ctx, req.GetLogin(), req.GetIp())
 	if err != nil {
 		return nil, status.Error(codes.Internal, "unable to drop stat")
 	}

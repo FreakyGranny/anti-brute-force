@@ -39,7 +39,7 @@ func (s *CacheLimiterSuite) setLoginExpect(login string, minute, loginReturn int
 
 func (s *CacheLimiterSuite) setPassExpect(password string, minute, passReturn int) {
 	strMinute := strconv.Itoa(minute)
-	passKey := strings.Join([]string{"PASS", password, strMinute}, ":")
+	passKey := strings.Join([]string{"PASSWORD", password, strMinute}, ":")
 	s.mockCache.EXPECT().Incr(s.ctx, passKey, time.Minute).Return(nil)
 	s.mockCache.EXPECT().Get(s.ctx, passKey).Return(passReturn, nil)
 }
@@ -109,9 +109,9 @@ func (s *CacheLimiterSuite) TestDrop() {
 	lim := NewCacheLimiter(s.mockCache, fakeTime, 2, 4, 6)
 
 	s.mockCache.EXPECT().Del(s.ctx, "LOGIN:test:31").Return(nil)
-	s.mockCache.EXPECT().Del(s.ctx, "PASS:xpass:31").Return(nil)
+	s.mockCache.EXPECT().Del(s.ctx, "IP:10.10.34.5:31").Return(nil)
 
-	err := lim.DropBuckets(s.ctx, "test", "xpass")
+	err := lim.DropBuckets(s.ctx, "test", "10.10.34.5")
 	s.Require().NoError(err)
 }
 

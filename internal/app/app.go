@@ -17,7 +17,7 @@ type Application interface {
 	AddToBlackList(ctx context.Context, ip, mask string) error
 	RemoveFromWhiteList(ctx context.Context, ip, mask string) error
 	RemoveFromBlackList(ctx context.Context, ip, mask string) error
-	DropStat(ctx context.Context, login, password string) error
+	DropStat(ctx context.Context, login, ip string) error
 	CheckRate(ctx context.Context, login, password, ip string) (bool, error)
 }
 
@@ -69,9 +69,13 @@ func ipInSubnet(ip string, subnets []*storage.IPNet) bool {
 	return false
 }
 
-// DropStat drops all stats for given login, password.
-func (a *App) DropStat(ctx context.Context, login, password string) error {
-	return a.limiter.DropBuckets(ctx, login, password)
+// DropStat drops all stats for given login, ip.
+func (a *App) DropStat(ctx context.Context, login, ip string) error {
+	if !IsValidIPFormat(ip) {
+		return ErrInvalidArgument
+	}
+
+	return a.limiter.DropBuckets(ctx, login, ip)
 }
 
 // AddToBlackList adding ip and mask to blacklist.

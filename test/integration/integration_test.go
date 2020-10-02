@@ -137,9 +137,6 @@ func (s *IntegrationSuite) TestIpAtWhitelist() {
 
 	s.RemoveFromWhitelist(ip, mask)
 	time.Sleep(2 * time.Second) // Wait for app updates whitelist
-
-	ok = s.CheckAuth(login, pass, "192.168.9.29")
-	s.Require().False(ok)
 }
 
 func (s *IntegrationSuite) AddToWhitelist(ip, mask string) {
@@ -228,8 +225,8 @@ func (s *IntegrationSuite) TestDropStat() {
 	s.Require().False(ok)
 
 	_, err := s.client.DropStat(context.Background(), &server.DropStatRequest{
-		Login:    login,
-		Password: pass,
+		Login: login,
+		Ip:    ip,
 	})
 	s.Require().NoError(err)
 

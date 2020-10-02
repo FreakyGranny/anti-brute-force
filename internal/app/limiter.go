@@ -12,12 +12,18 @@ import (
 
 const period = time.Minute
 
+const (
+	loginPrefix    = "LOGIN"
+	passwordPrefix = "PASSWORD"
+	ipPrefix       = "IP"
+)
+
 //go:generate mockgen -source=$GOFILE -destination=../mocks/limiter_mock.go -package=mocks Limiter
 
 // Limiter ...
 type Limiter interface {
 	CheckLimits(ctx context.Context, login string, password string, ip string) (bool, error)
-	DropBuckets(ctx context.Context, login string, password string) error
+	DropBuckets(ctx context.Context, login string, ip string) error
 }
 
 // CacheLimiter limit checker based on cache.
@@ -48,7 +54,7 @@ func buildKey(id string, val string, min int) string {
 func (lim *CacheLimiter) CheckLimits(ctx context.Context, login string, password string, ip string) (bool, error) {
 	p := lim.clock.Now().Minute()
 
-	lKey := buildKey("LOGIN", login, p)
+	lKey := buildKey(loginPrefix, login, p)
 	err := lim.cache.Incr(ctx, lKey, period)
 	if err != nil {
 		return false, err
@@ -61,7 +67,7 @@ func (lim *CacheLimiter) CheckLimits(ctx context.Context, login string, password
 		return false, nil
 	}
 
-	pKey := buildKey("PASS", password, p)
+	pKey := buildKey(passwordPrefix, password, p)
 	err = lim.cache.Incr(ctx, pKey, period)
 	if err != nil {
 		return false, err
@@ -74,7 +80,7 @@ func (lim *CacheLimiter) CheckLimits(ctx context.Context, login string, password
 		return false, nil
 	}
 
-	IPKey := buildKey("IP", ip, p)
+	IPKey := buildKey(ipPrefix, ip, p)
 	err = lim.cache.Incr(ctx, IPKey, period)
 	if err != nil {
 		return false, err
@@ -90,16 +96,16 @@ func (lim *CacheLimiter) CheckLimits(ctx context.Context, login string, password
 	return true, nil
 }
 
-// DropBuckets deletes buckets for given login password.
-func (lim *CacheLimiter) DropBuckets(ctx context.Context, login string, password string) error {
+// DropBuckets deletes buckets for given login, ip.
+func (lim *CacheLimiter) DropBuckets(ctx context.Context, login string, ip string) error {
 	p := lim.clock.Now().Minute()
 
-	lKey := buildKey("LOGIN", login, p)
+	lKey := buildKey(loginPrefix, login, p)
 	err := lim.cache.Del(ctx, lKey)
 	if err != nil {
 		return err
 	}
-	pKey := buildKey("PASS", password, p)
+	pKey := buildKey(ipPrefix, ip, p)
 
 	return lim.cache.Del(ctx, pKey)
 }

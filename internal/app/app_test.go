@@ -213,11 +213,17 @@ func (s *AppSuite) TestRemoveWLInvalidMask() {
 
 func (s *AppSuite) TestDropStat() {
 	login := faker.Username()
-	pass := faker.Password()
-	s.mockLimiter.EXPECT().DropBuckets(s.ctx, login, pass).Return(nil)
+	ip := faker.IPv4()
+	s.mockLimiter.EXPECT().DropBuckets(s.ctx, login, ip).Return(nil)
 
-	err := s.application.DropStat(s.ctx, login, pass)
+	err := s.application.DropStat(s.ctx, login, ip)
 	s.Require().NoError(err)
+}
+
+func (s *AppSuite) TestDropStatIpInvalid() {
+	err := s.application.DropStat(s.ctx, faker.Username(), faker.Word())
+	s.Require().Error(err)
+	s.Require().Equal(ErrInvalidArgument, err)
 }
 
 func TestAppSuite(t *testing.T) {
