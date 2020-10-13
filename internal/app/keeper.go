@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net"
 	"sync"
 	"time"
 
@@ -13,8 +14,8 @@ import (
 
 // IPKeeper ip lists storage.
 type IPKeeper interface {
-	GetBlacklist() []*storage.IPNet
-	GetWhitelist() []*storage.IPNet
+	GetBlacklist() []*net.IPNet
+	GetWhitelist() []*net.IPNet
 	Refresh(ctx context.Context) error
 	Watch(ctx context.Context, interval time.Duration)
 }
@@ -24,35 +25,31 @@ type MemIPKeeper struct {
 	storage   storage.ReadStorage
 	bmu       sync.RWMutex
 	wmu       sync.RWMutex
-	blacklist []*storage.IPNet
-	whitelist []*storage.IPNet
+	blacklist []*net.IPNet
+	whitelist []*net.IPNet
 }
 
 // NewMemIPKeeper returns keeper instance.
 func NewMemIPKeeper(s storage.ReadStorage) *MemIPKeeper {
 	return &MemIPKeeper{
-		storage:   s,
-		blacklist: make([]*storage.IPNet, 0),
-		whitelist: make([]*storage.IPNet, 0),
+		storage: s,
 	}
 }
 
 // GetBlacklist returns blacklist from memory storage.
-func (k *MemIPKeeper) GetBlacklist() []*storage.IPNet {
-	k.bmu.RLock()
-	v := k.blacklist
-	k.bmu.RUnlock()
+func (k *MemIPKeeper) GetBlacklist() []*net.IPNet {
+	blacklist := make([]*net.IPNet, len(k.blacklist))
+	copy(blacklist, k.blacklist)
 
-	return v
+	return blacklist
 }
 
 // GetWhitelist returns whitelist from memory storage.
-func (k *MemIPKeeper) GetWhitelist() []*storage.IPNet {
-	k.wmu.RLock()
-	v := k.whitelist
-	k.wmu.RUnlock()
+func (k *MemIPKeeper) GetWhitelist() []*net.IPNet {
+	whitelist := make([]*net.IPNet, len(k.whitelist))
+	copy(whitelist, k.whitelist)
 
-	return v
+	return whitelist
 }
 
 func (k *MemIPKeeper) refreshBlackList(ctx context.Context) error {
@@ -64,9 +61,20 @@ func (k *MemIPKeeper) refreshBlackList(ctx context.Context) error {
 		return err
 	}
 
-	k.blacklist = values
+	k.blacklist = make([]*net.IPNet, 0, len(values))
+	for _, v := range values {
+		k.blacklist = append(k.blacklist, parseNet(v))
+	}
 
 	return nil
+}
+
+func parseNet(subnet *storage.IPNet) *net.IPNet {
+	byteMask := net.ParseIP(subnet.Mask).To4()
+	return &net.IPNet{
+		IP:   net.ParseIP(subnet.IP),
+		Mask: net.IPv4Mask(byteMask[0], byteMask[1], byteMask[2], byteMask[3]),
+	}
 }
 
 func (k *MemIPKeeper) refreshWhiteList(ctx context.Context) error {
@@ -78,7 +86,10 @@ func (k *MemIPKeeper) refreshWhiteList(ctx context.Context) error {
 		return err
 	}
 
-	k.whitelist = values
+	k.whitelist = make([]*net.IPNet, 0, len(values))
+	for _, v := range values {
+		k.whitelist = append(k.whitelist, parseNet(v))
+	}
 
 	return nil
 }

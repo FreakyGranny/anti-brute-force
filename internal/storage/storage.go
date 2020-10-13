@@ -14,15 +14,13 @@ type SQLStorage struct {
 }
 
 // New returns new sql storage.
-func New(dsn string) *SQLStorage {
+func New(dsn string) (*SQLStorage, error) {
 	db, err := sqlx.Open("pgx", dsn)
 	if err != nil {
-		log.Fatal().
-			Err(err).
-			Msg("failed to load driver")
+		return nil, err
 	}
 
-	return &SQLStorage{db: db}
+	return &SQLStorage{db: db}, nil
 }
 
 // Close close db connection.
@@ -76,7 +74,11 @@ func (s *SQLStorage) getSubnetList(ctx context.Context, query string) ([]*IPNet,
 	if err != nil {
 		return res, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err = rows.Close(); err != nil {
+			log.Error().Err(err).Msg("")
+		}
+	}()
 
 	for rows.Next() {
 		var n IPNet

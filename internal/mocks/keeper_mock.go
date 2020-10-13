@@ -6,8 +6,8 @@ package mocks
 
 import (
 	context "context"
-	storage "github.com/FreakyGranny/anti-brute-force/internal/storage"
 	gomock "github.com/golang/mock/gomock"
+	net "net"
 	reflect "reflect"
 	time "time"
 )
@@ -36,10 +36,10 @@ func (m *MockIPKeeper) EXPECT() *MockIPKeeperMockRecorder {
 }
 
 // GetBlacklist mocks base method
-func (m *MockIPKeeper) GetBlacklist() []*storage.IPNet {
+func (m *MockIPKeeper) GetBlacklist() []*net.IPNet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBlacklist")
-	ret0, _ := ret[0].([]*storage.IPNet)
+	ret0, _ := ret[0].([]*net.IPNet)
 	return ret0
 }
 
@@ -50,10 +50,10 @@ func (mr *MockIPKeeperMockRecorder) GetBlacklist() *gomock.Call {
 }
 
 // GetWhitelist mocks base method
-func (m *MockIPKeeper) GetWhitelist() []*storage.IPNet {
+func (m *MockIPKeeper) GetWhitelist() []*net.IPNet {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetWhitelist")
-	ret0, _ := ret[0].([]*storage.IPNet)
+	ret0, _ := ret[0].([]*net.IPNet)
 	return ret0
 }
 

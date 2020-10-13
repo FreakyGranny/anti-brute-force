@@ -52,16 +52,9 @@ func (a *App) CheckRate(ctx context.Context, login, password, ip string) (bool, 
 	return a.limiter.CheckLimits(ctx, login, password, ip)
 }
 
-func ipInSubnet(ip string, subnets []*storage.IPNet) bool {
+func ipInSubnet(ip string, subnets []*net.IPNet) bool {
 	for _, n := range subnets {
-		byteMask := net.ParseIP(n.Mask).To4()
-		ipv4Net := net.IPNet{
-			IP:   net.ParseIP(n.IP),
-			Mask: net.IPv4Mask(byteMask[0], byteMask[1], byteMask[2], byteMask[3]),
-		}
-
-		contains := ipv4Net.Contains(net.ParseIP(ip))
-		if contains {
+		if n.Contains(net.ParseIP(ip)) {
 			return true
 		}
 	}

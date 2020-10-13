@@ -14,8 +14,8 @@ func init() {
 func Up002(tx *sql.Tx) error {
 	_, err := tx.Exec(
 		`CREATE TABLE blacklist (
-			ip varchar(15) NOT NULL,
-			mask varchar(15) NOT NULL,
+			ip inet NOT NULL,
+			mask inet NOT NULL,
 			PRIMARY KEY (ip, mask));
 	`)
 	if err != nil {

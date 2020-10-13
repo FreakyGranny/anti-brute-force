@@ -1,6 +1,6 @@
 
 run:
-  tests: true
+  tests: false
 
 linters:
   disable-all: false
@@ -16,3 +16,4 @@ linters:
     - testpackage
     - wsl
     - nlreturn
+    - funlen

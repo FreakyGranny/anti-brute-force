@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"net"
 	"testing"
 
 	"github.com/FreakyGranny/anti-brute-force/internal/mocks"
@@ -49,7 +50,7 @@ func (s *MemIPKeeperSuite) TestEmptyLists() {
 }
 
 func (s *MemIPKeeperSuite) TestWhiteList() {
-	expect := []*storage.IPNet{
+	dbExpect := []*storage.IPNet{
 		{
 			IP:   "192.168.0.0",
 			Mask: "255.0.0.0",
@@ -59,9 +60,19 @@ func (s *MemIPKeeperSuite) TestWhiteList() {
 			Mask: "255.255.225.0",
 		},
 	}
+	expect := []*net.IPNet{
+		{
+			IP:   net.IPv4(192, 168, 0, 0),
+			Mask: net.IPv4Mask(255, 0, 0, 0),
+		},
+		{
+			IP:   net.IPv4(10, 10, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
+		},
+	}
 
 	s.mockStorage.EXPECT().GetBlackList(s.ctx).Return(nil, nil)
-	s.mockStorage.EXPECT().GetWhiteList(s.ctx).Return(expect, nil)
+	s.mockStorage.EXPECT().GetWhiteList(s.ctx).Return(dbExpect, nil)
 
 	err := s.keeper.Refresh(s.ctx)
 	s.Require().NoError(err)
@@ -72,7 +83,7 @@ func (s *MemIPKeeperSuite) TestWhiteList() {
 }
 
 func (s *MemIPKeeperSuite) TestBlackList() {
-	expect := []*storage.IPNet{
+	dbExpect := []*storage.IPNet{
 		{
 			IP:   "192.168.0.0",
 			Mask: "255.0.0.0",
@@ -82,8 +93,18 @@ func (s *MemIPKeeperSuite) TestBlackList() {
 			Mask: "255.255.225.0",
 		},
 	}
+	expect := []*net.IPNet{
+		{
+			IP:   net.IPv4(192, 168, 0, 0),
+			Mask: net.IPv4Mask(255, 0, 0, 0),
+		},
+		{
+			IP:   net.IPv4(10, 10, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
+		},
+	}
 
-	s.mockStorage.EXPECT().GetBlackList(s.ctx).Return(expect, nil)
+	s.mockStorage.EXPECT().GetBlackList(s.ctx).Return(dbExpect, nil)
 	s.mockStorage.EXPECT().GetWhiteList(s.ctx).Return(nil, nil)
 
 	err := s.keeper.Refresh(s.ctx)

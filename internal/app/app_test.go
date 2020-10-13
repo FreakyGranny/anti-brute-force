@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
+	"net"
 	"testing"
 
 	"github.com/FreakyGranny/anti-brute-force/internal/mocks"
-	"github.com/FreakyGranny/anti-brute-force/internal/storage"
 	"github.com/bxcodec/faker/v3"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
@@ -46,14 +46,14 @@ func (s *AppSuite) TestCheckInvalidIP() {
 }
 
 func (s *AppSuite) TestIpNotAtBlacklist() {
-	expect := []*storage.IPNet{
+	expect := []*net.IPNet{
 		{
-			IP:   "192.168.0.0/24",
-			Mask: "255.255.225.0",
+			IP:   net.IPv4(192, 168, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
 		},
 		{
-			IP:   "10.10.0.0/24",
-			Mask: "255.255.225.0",
+			IP:   net.IPv4(10, 10, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
 		},
 	}
 	login := faker.Username()
@@ -70,14 +70,14 @@ func (s *AppSuite) TestIpNotAtBlacklist() {
 }
 
 func (s *AppSuite) TestIpAtBlacklist() {
-	expect := []*storage.IPNet{
+	expect := []*net.IPNet{
 		{
-			IP:   "192.168.0.0",
-			Mask: "255.0.0.0",
+			IP:   net.IPv4(192, 168, 0, 0),
+			Mask: net.IPv4Mask(255, 0, 0, 0),
 		},
 		{
-			IP:   "10.10.0.0",
-			Mask: "255.255.225.0",
+			IP:   net.IPv4(10, 10, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
 		},
 	}
 	s.mockKeeper.EXPECT().GetWhitelist().Return(nil)
@@ -89,14 +89,14 @@ func (s *AppSuite) TestIpAtBlacklist() {
 }
 
 func (s *AppSuite) TestIpNotAtWhitelist() {
-	expect := []*storage.IPNet{
+	expect := []*net.IPNet{
 		{
-			IP:   "192.168.0.0",
-			Mask: "255.255.225.0",
+			IP:   net.IPv4(17, 18, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
 		},
 		{
-			IP:   "10.10.0.0",
-			Mask: "255.255.225.0",
+			IP:   net.IPv4(123, 15, 89, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
 		},
 	}
 	login := faker.Username()
@@ -112,14 +112,14 @@ func (s *AppSuite) TestIpNotAtWhitelist() {
 }
 
 func (s *AppSuite) TestIpAtWhitelist() {
-	expect := []*storage.IPNet{
+	expect := []*net.IPNet{
 		{
-			IP:   "192.168.0.0",
-			Mask: "255.0.0.0",
+			IP:   net.IPv4(192, 168, 0, 0),
+			Mask: net.IPv4Mask(255, 0, 0, 0),
 		},
 		{
-			IP:   "10.10.0.0",
-			Mask: "255.255.225.0",
+			IP:   net.IPv4(10, 10, 0, 0),
+			Mask: net.IPv4Mask(255, 255, 225, 0),
 		},
 	}
 	s.mockKeeper.EXPECT().GetWhitelist().Return(expect)

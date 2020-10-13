@@ -30,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatal().Err(err).Msgf("wrong ip list refresh interval %s", cfg.IPListRefresh)
 	}
-	db := storage.New(storage.BuildDsn(
+	db, err := storage.New(storage.BuildDsn(
 		cfg.DB.Host,
 		cfg.DB.Port,
 		cfg.DB.Username,
@@ -38,21 +38,33 @@ func main() {
 		cfg.DB.Name,
 		cfg.DB.SSLEnable,
 	))
-	defer db.Close()
+	if err != nil {
+		log.Fatal().Err(err).Msg("error while initializing db")
+	}
+	defer func() {
+		if err = db.Close(); err != nil {
+			log.Error().Err(err).Msg("error at close db connection")
+		}
+	}()
+
 	keeper := app.NewMemIPKeeper(db)
-	ctx, keeperCancel := context.WithCancel(context.Background())
-	if err := keeper.Refresh(ctx); err != nil {
+	keeperCtx, keeperCancel := context.WithCancel(context.Background())
+	if err := keeper.Refresh(keeperCtx); err != nil {
 		log.Error().Err(err).Msg("can't initialize black/white lists")
 		return
 	}
-	cache, err := cache.New(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
+	redisCache, err := cache.New(cfg.Redis.Host, cfg.Redis.Port, cfg.Redis.Password)
 	if err != nil {
 		log.Error().Err(err).Msg("redis unavailable")
 		return
 	}
-	defer cache.Close()
+	defer func() {
+		if err = redisCache.Close(); err != nil {
+			log.Error().Err(err).Msg("error at close db connection")
+		}
+	}()
 
-	limiter := app.NewCacheLimiter(cache, clockwork.NewRealClock(), cfg.Limits.User, cfg.Limits.Password, cfg.Limits.IP)
+	limiter := app.NewCacheLimiter(redisCache, clockwork.NewRealClock(), cfg.Limits.User, cfg.Limits.Password, cfg.Limits.IP)
 	lsn, err := net.Listen("tcp", net.JoinHostPort(cfg.GRPC.Host, strconv.Itoa(cfg.GRPC.Port)))
 	if err != nil {
 		log.Error().Err(err).Msg("")
@@ -62,7 +74,7 @@ func main() {
 	service := server.New(app.New(db, keeper, limiter))
 	server.RegisterABruteforceServer(srv, service)
 
-	go keeper.Watch(ctx, refreshInterval)
+	go keeper.Watch(keeperCtx, refreshInterval)
 	go func() {
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, os.Interrupt)

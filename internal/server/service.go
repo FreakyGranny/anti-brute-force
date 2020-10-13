@@ -21,7 +21,7 @@ func New(a app.Application) *Service {
 	return &Service{app: a}
 }
 
-// Auth check possibility of authentification.
+// Auth check possibility of authentication.
 func (s *Service) Auth(ctx context.Context, req *AuthRequest) (*AuthResponse, error) {
 	ok, err := s.app.CheckRate(ctx, req.GetLogin(), req.GetPassword(), req.GetIp())
 	switch err {
